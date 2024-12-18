@@ -6,31 +6,23 @@ EPSILON = 0.001
 DEFAULT_ITERATIONS = 200
 
 
-# Read data from file
-# get as args K, iterations, data. Example command: 
-# python3 kmeans.py 3 100 input_data.txt
-# Recommended using split()
-# Can use builtin packages
-# Print output using print()
-
-
-# TODO:
-# Validate inputs (k, iters)
-# format to 4 decimal places (use: '%4f')
+def error_has_occured():
+    """
+    Default action to handle random error
+    """
+    print("An Error Has Occurred")
+    exit()
 
 
 def get_euclidean_dist(vec1, vec2):
     """
     params: vec1, vec2 : lists of float values of length K
     """   
-    sum = 0
     # Validate vectors of same len
     if (len(vec1) != len(vec2)):
-        print("ERROR")
-        print(vec1)
-        print(vec2)
-        raise error
-    
+        error_has_occured()
+        
+    sum = 0
     for i in range(len(vec1)):
         sum += math.pow(vec1[i]-vec2[i], 2)
     
@@ -59,6 +51,9 @@ def find_closest_cluster(centroid_lst, vector):
 
 
 def check_convergence(old_centroid_lst, new_centroid_lst):
+    """
+    Checks if the centroid list has converged based on constant EPSILON.
+    """
     for i in range(len(old_centroid_lst)):
         if (not get_euclidean_dist(old_centroid_lst[i], new_centroid_lst[i]) < EPSILON):
             return False
@@ -126,6 +121,9 @@ def k_means(K, iters, data):
 
 
 def validate_input(K, N, iter = None):
+    """
+    Validates input of K and iterations (if given) according to the table in the exercise.
+    """
     if (not 1 < K < N):
         return False, "Invalid number of clusters!"
     if (iter and not 1 < iter < 1000):
@@ -134,11 +132,17 @@ def validate_input(K, N, iter = None):
 
 
 def get_data(file_path):
+    """
+    Reads data from file given file_path
+    """
     with open(file_path, 'r') as file:
         return file.read()
     
 
 def format_output(output):
+    """
+    Formats output to 4 numbers after decimal point and each vector as a single string.
+    """
     new_output = []
     for centroid in output:
         for i in range(len(centroid)):
@@ -155,8 +159,6 @@ if __name__=="__main__":
         K, iter, file_path = int(args[1]), DEFAULT_ITERATIONS, args[2]
     else:
         K, iter, file_path = int(args[1]), int(args[2]), args[3]
-
-    print(K, iter, file_path)
 
     data = get_data(file_path)
 
