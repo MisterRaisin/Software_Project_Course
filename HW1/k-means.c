@@ -9,14 +9,12 @@ int BASE_EXP_START = 3;
 double convergenceTarget = 0.00001;
 
 
-int i=0;
-int j=0;
 
 double getDistance(double a[],double b[],int dim);
 
 int main(int argc, char **argv)
 {
-    int k, iter, dim=0;
+    int i=0,j=0,k, iter, dim=0;
     if(argc < 2 || argc > 3){
         printf("An Error Has Occurred");
         return 1;
@@ -30,7 +28,7 @@ int main(int argc, char **argv)
         iter = DEFAULT_ITER;
     }else{
         iter = atoi(argv[2]);
-        if(iter == 0){
+        if(iter < 1){
             printf("Invalid maximum iteration!");
             return 1;
         }
@@ -44,7 +42,7 @@ int main(int argc, char **argv)
         
     }
     dim++;
-    printf("dim: %d\n",dim);
+    // printf("dim: %d\n",dim);
 
     rewind(stdin);
 
@@ -59,8 +57,7 @@ int main(int argc, char **argv)
     int sign = 1;
 
 
-
-   
+  
 
 
     double currentScalar=0;
@@ -74,6 +71,14 @@ int main(int argc, char **argv)
                 return 1;
             }
             clusters[vectorCount][scalarCount]=currentScalar*sign;
+
+            for(j=0;j<dim-1;j++){
+                printf("%lf,", clusters[vectorCount][j]);
+            }
+            printf("%lf\n", clusters[vectorCount][j]);
+
+
+
             currentScalar = 0;
             sign = 1;
             baseExp = BASE_EXP_START;
@@ -102,16 +107,26 @@ int main(int argc, char **argv)
     }
 
 
+
+
+   
+
+
     vectorCount = 0; // we dont include the cluster initialization in the count.
     scalarCount = 0;
     currentScalar = 0;
     sign = 0;
     baseExp = BASE_EXP_START;
+
+
     int minDiffAt;
     double minDiff=INFINITY;
     double diff;
     double currentCentroidDifference[dim];
     double minCentroidDifference[dim];
+
+    double oldCentroid[dim];
+    double change;
 
     double currentVector[dim];
 
@@ -136,34 +151,64 @@ int main(int argc, char **argv)
             scalarCount=0;
             vectorCount++;
 
-            
+            for(j=0;j<dim-1;j++){
+                printf("%lf,",currentVector[j]);
+            }
+            printf("%lf\n",currentVector[j]);
+
+
+
             for(i=0;i<k;i++){
-                diff = 0;
-                for(j=0;j<dim;j++){
-                    currentCentroidDifference[j] = (currentVector[j] - clusters[i][j])/vectorCount;
-                    diff += currentCentroidDifference[j]*currentCentroidDifference[j];
-                }
-                diff = sqrt(diff);
-                if(diff<minDiff){
+                diff = getDistance(currentVector,clusters[i],dim);
+                if(diff < minDiff){
                     minDiff = diff;
                     minDiffAt = i;
-                    for(j=0;j<dim;j++){
-                        minCentroidDifference[j] = currentCentroidDifference[j];
-                    }
                 }
             }
-            for(i=0;i<k;i++){
-                clusters[minDiffAt][i] = clusters[minDiffAt][i] + minCentroidDifference[i];
-            }
-            
 
-            
-            if(minDiff*vectorCount < convergenceTarget){
-                if(convergenceArray[minDiffAt] == 0){
+            for(j=0;j<dim;j++){
+                oldCentroid[j] = clusters[minDiffAt][j];
+            }
+
+            for(j=0;j<dim;j++){
+                clusters[minDiffAt][j] = clusters[minDiffAt][j]*(vectorCount-1)+currentVector[j];
+                clusters[minDiffAt][j] /= vectorCount;
+            }
+
+            if(!convergenceArray[minDiffAt]){
+                change = getDistance(oldCentroid,clusters[minDiffAt],dim);
+                if(change <= convergenceTarget){
                     convergenceArray[minDiffAt] = 1;
                     convergenceCount++;
                 }
             }
+            // for(i=0;i<k;i++){
+            //     diff = 0;
+            //     for(j=0;j<dim;j++){
+            //         currentCentroidDifference[j] = (currentVector[j] - clusters[i][j])/vectorCount;
+            //         diff += currentCentroidDifference[j]*currentCentroidDifference[j];
+            //     }
+            //     diff = sqrt(diff);
+            //     if(diff<minDiff){
+            //         minDiff = diff;
+            //         minDiffAt = i;
+            //         for(j=0;j<dim;j++){
+            //             minCentroidDifference[j] = currentCentroidDifference[j];
+            //         }
+            //     }
+            // }
+            // for(i=0;i<k;i++){
+            //     clusters[minDiffAt][i] = clusters[minDiffAt][i] + minCentroidDifference[i];
+            // }
+            
+
+            
+            // if(minDiff*vectorCount < convergenceTarget){
+            //     if(convergenceArray[minDiffAt] == 0){
+            //         convergenceArray[minDiffAt] = 1;
+            //         convergenceCount++;
+            //     }
+            // }
         }else if(ch==','){
             if(scalarCount >= dim){
                 printf("\nPlease provide a valid file inwhich all vectors are of the same dimension. At vector number %d",vectorCount);
@@ -197,3 +242,13 @@ int main(int argc, char **argv)
     return 0;
 }
 
+double getDistance(double a[],double b[],int dim){
+    double sum = 0;
+    double temp;
+    int i;
+    for(i=0;i<dim;i++){
+        temp =  a[i]-b[i];
+        sum += temp*temp;
+    }
+    return sqrt(sum);
+}
