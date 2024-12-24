@@ -137,6 +137,8 @@ def get_data(file_path):
     """
     with open(file_path, 'r') as file:
         return file.read()
+
+    error_has_occured()
     
 
 def format_output(output):
@@ -155,22 +157,26 @@ def format_output(output):
 if __name__=="__main__":
     args = sys.argv
     
-    if (len(args) == 3):
-        K, iter, file_path = int(args[1]), DEFAULT_ITERATIONS, args[2]
-    else:
-        K, iter, file_path = int(args[1]), int(args[2]), args[3]
+    try:
+        if (len(args) == 3):
+            K, iter, file_path = int(args[1]), DEFAULT_ITERATIONS, args[2]
+        else:
+            K, iter, file_path = int(args[1]), int(args[2]), args[3]
 
-    data = get_data(file_path)
+        data = get_data(file_path)
 
-    valid, error = validate_input(K, len(data.split('\n')), iter)
-    if (not valid):
-        print(error)
-        exit()
+        valid, error = validate_input(K, len(data.split('\n')), iter)
+        if (not valid):
+            print(error)
+            exit()
 
-    output = format_output(k_means(K, iter, data))
+        output = format_output(k_means(K, iter, data))
 
-    for line in output:
-        print(line)
+        for line in output:
+            print(line)
+
+    except: 
+        error_has_occured()
 
 
     
