@@ -1,4 +1,5 @@
 import sys
+import os
 import math
 
 
@@ -11,7 +12,7 @@ def error_has_occured():
     Default action to handle random error
     """
     print("An Error Has Occurred")
-    exit()
+    os._exit(1)()
 
 
 def get_euclidean_dist(vec1, vec2):
@@ -107,7 +108,7 @@ def k_means(K, iters, data):
         new_centroid_list = get_centroids(cluster_lst, vector_len)
 
 
-        # If finished converging or reached maximum iterations, exit
+        # If finished converging or reached maximum iterations, os._exit(1)
         if check_convergence(centroid_lst, new_centroid_list) or curr_iter == iters:
             centroid_lst = new_centroid_list
             break
@@ -168,7 +169,7 @@ if __name__=="__main__":
         valid, error = validate_input(K, len(data.split('\n')), iter)
         if (not valid):
             print(error)
-            exit()
+            os._exit(1)()
 
         output = format_output(k_means(K, iter, data))
 
