@@ -1,6 +1,7 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
+
 
 
 int MAX_NUM_LENGTH = 20;
@@ -14,83 +15,65 @@ double getDistance(double a[],double b[],int dim);
 
 int main(int argc, char **argv)
 {
-    int i=0,j=0,k, iter, dim=0;
-    if(argc < 2 || argc > 3){
-        printf("An Error Has Occurred");
+    int i=0,j=0,k, iter, dim=0; // iterators and dim
+    if(argc < 2 || argc > 3){ // Wrong number of arguments (1 or 2 depending on the iter max) + 1 of the file
+        printf("An Error Has Occurred\n");
         return 1;
     }
     k = atoi(argv[1]);
-    if(k == 0){
-        printf("Invalid number of clusters!");
+    if(k == 0){ // Cluster input check
+        printf("Invalid number of clusters!\n");
         return 1;
     }
-    if(argc== 2){
+    if(argc== 2){ // If we didn't get no iter max, set the default
         iter = DEFAULT_ITER;
     }else{
         iter = atoi(argv[2]);
-        if(iter < 1){
-            printf("Invalid maximum iteration!");
+        if(iter < 1){ // Iter input check
+            printf("Invalid maximum iteration!\n");
             return 1;
         }
     }
 
     char ch;
     while ((ch = getc(stdin)) != EOF && ch != 10) { // Finding the dimension
-        if(ch==','){
+        if(ch==','){ // End of scalar
             dim++;
         }
         
     }
-    dim++;
-    // printf("dim: %d\n",dim);
-
-    rewind(stdin);
+    dim++; // End of row doesn't get ++'d in the loop
+    rewind(stdin); // Reset the file pointer
 
 
 
     
-    double clusters[k][dim];
+    double clusters[k][dim]; // Our clusters
 
     int vectorCount=0;
     int scalarCount=0;
-    int baseExp=BASE_EXP_START;
+    int baseExp=BASE_EXP_START; // We add char by char, and this keeps track of the floating point
     int sign = 1;
-
-
-  
-
-
+    int thereWasPoint=0;
     double currentScalar=0;
 
 
 
-    while ((ch = getc(stdin)) != EOF && vectorCount<k) {
-        if(ch == 10){ // Line break
-            if(scalarCount!=dim-1 && scalarCount!=0){
-                 printf("\nPlease provide a valid file inwhich all vectors are of the same dimension. At k vector number %d",vectorCount);
+    while (vectorCount<k  && (ch = getc(stdin)) != EOF) { // its crucial that the count check is first, otherwise, we steal the first char of the next line
+        if(ch==','){ // comma, end of scalar
+            if(scalarCount >= dim){// Non uniform dimension
+                printf("An Error Has Occurred\n");
                 return 1;
             }
-            clusters[vectorCount][scalarCount]=currentScalar*sign;
 
-            for(j=0;j<dim-1;j++){
-                printf("%lf,", clusters[vectorCount][j]);
+            if(!thereWasPoint){ // Incase this is a whole number and we dont see a point, we should fix the floating point location here, see ch=="." case
+                currentScalar *= pow(10,-baseExp-1);
             }
-            printf("%lf\n", clusters[vectorCount][j]);
 
+            clusters[vectorCount][scalarCount]=currentScalar*sign; //Pushing current char
 
-
-            currentScalar = 0;
-            sign = 1;
-            baseExp = BASE_EXP_START;
-            scalarCount=0;
-            vectorCount++;
-        }else if(ch==','){
-            if(scalarCount >= dim){
-                printf("\nPlease provide a valid file inwhich all vectors are of the same dimension. At k vector number %d",vectorCount);
-                return 1;
-            }
-            clusters[vectorCount][scalarCount]=currentScalar*sign;
-            currentScalar = 0;
+            currentScalar = 0; // resetting helpers
+            thereWasPoint = 0;
             sign = 1;
             baseExp = BASE_EXP_START;
             scalarCount++;
@@ -98,9 +81,29 @@ int main(int argc, char **argv)
             sign=-1;
         }
         else if(ch=='.'){
-            currentScalar *= pow(10,-baseExp-1);
-            baseExp = -1;
-        }else{
+            currentScalar *= pow(10,-baseExp-1); // Fixing in hindsight the floating point location
+            baseExp = -1; // Base for the next digit after the point
+            thereWasPoint = 1; 
+        }else if(ch == 10){ // Line break
+            if(scalarCount!=dim-1 && scalarCount!=0){ // Non uniform dimension
+                printf("An Error Has Occurred\n");
+                return 1;
+            }
+
+            if(!thereWasPoint){ // Incase this is a whole number and we dont see a point, we should fix the floating point location here, see ch=="." case
+                currentScalar *= pow(10,-baseExp-1);
+            }
+
+            clusters[vectorCount][scalarCount]=currentScalar*sign; // Updataing the last scalar
+
+            currentScalar = 0; // resetting helpers
+            thereWasPoint = 0;
+            sign = 1;
+            baseExp = BASE_EXP_START;
+            scalarCount=0;
+
+            vectorCount++; // incrementing vector count
+        }else{ // Normal digit, we sum it to the scalar with the current floating point location
             currentScalar += (ch-'0')*pow(10,baseExp);
             baseExp--;
         }
@@ -113,14 +116,18 @@ int main(int argc, char **argv)
 
 
     vectorCount = 0; // we dont include the cluster initialization in the count.
-    scalarCount = 0;
+    scalarCount = 0; // resetting helpers
     currentScalar = 0;
-    sign = 0;
+    thereWasPoint = 0;
+    sign = 1;
     baseExp = BASE_EXP_START;
 
-
-    int minDiffAt;
-    double minDiff=INFINITY;
+    int centroidLengths[k]; // Holds the size of each cluster (we dont actually hold an array of them)
+    for(i=0;i<k;i++){
+        centroidLengths[k]=1;
+    }
+    int minDiffAt; // Helpers
+    double minDiff;
     double diff;
     double currentCentroidDifference[dim];
     double minCentroidDifference[dim];
@@ -131,33 +138,30 @@ int main(int argc, char **argv)
     double currentVector[dim];
 
 
-    char convergenceArray[k];
-    int convergenceCount=0;
-    for(i=0;i<k;i++){
-        convergenceArray[i] = 0;
-    }
+    char convergenceArray[k]; // To keep track of the clusters that have already reached the convergence target
+    int convergenceCount=0; // To keep track the number of clusters that have did so
 
 
-   while ((ch = getc(stdin)) != EOF && vectorCount<iter && convergenceCount < k) {
+   while ((ch = getc(stdin)) != EOF && vectorCount<iter && convergenceCount < k){
         if(ch == 10){ // Line break
             if(scalarCount!=dim-1 && scalarCount!=0){
-                printf("\nPlease provide a valid file inwhich all vectors are of the same dimension. At vector number %d",vectorCount);
+                printf("An Error Has Occurred\n");
                 return 1;
             }
+
+            if(!thereWasPoint){
+                currentScalar *= pow(10,-baseExp-1);
+            }
+
             currentVector[scalarCount]=currentScalar*sign;
             currentScalar = 0;
             sign = 1;
             baseExp = BASE_EXP_START;
             scalarCount=0;
             vectorCount++;
+            thereWasPoint = 0;
 
-            for(j=0;j<dim-1;j++){
-                printf("%lf,",currentVector[j]);
-            }
-            printf("%lf\n",currentVector[j]);
-
-
-
+            minDiff=INFINITY;
             for(i=0;i<k;i++){
                 diff = getDistance(currentVector,clusters[i],dim);
                 if(diff < minDiff){
@@ -165,23 +169,30 @@ int main(int argc, char **argv)
                     minDiffAt = i;
                 }
             }
+            printf("%d\n",minDiffAt);
 
             for(j=0;j<dim;j++){
                 oldCentroid[j] = clusters[minDiffAt][j];
             }
-
+            centroidLengths[minDiffAt]++;
             for(j=0;j<dim;j++){
-                clusters[minDiffAt][j] = clusters[minDiffAt][j]*(vectorCount-1)+currentVector[j];
-                clusters[minDiffAt][j] /= vectorCount;
+                clusters[minDiffAt][j] = clusters[minDiffAt][j]*(centroidLengths[minDiffAt]-1)+currentVector[j];
+                clusters[minDiffAt][j] /= centroidLengths[minDiffAt];
             }
 
-            if(!convergenceArray[minDiffAt]){
-                change = getDistance(oldCentroid,clusters[minDiffAt],dim);
-                if(change <= convergenceTarget){
-                    convergenceArray[minDiffAt] = 1;
+            change = getDistance(oldCentroid,clusters[minDiffAt],dim);
+            if(change <= convergenceTarget){
+                if(convergenceArray[minDiffAt] == 0){
                     convergenceCount++;
                 }
+                convergenceArray[minDiffAt] = 1;
+            }else{
+                if(convergenceArray[minDiffAt] == 1){
+                    convergenceCount--;
+                }
+                convergenceArray[minDiffAt] = 0;
             }
+        
             // for(i=0;i<k;i++){
             //     diff = 0;
             //     for(j=0;j<dim;j++){
@@ -211,11 +222,18 @@ int main(int argc, char **argv)
             // }
         }else if(ch==','){
             if(scalarCount >= dim){
-                printf("\nPlease provide a valid file inwhich all vectors are of the same dimension. At vector number %d",vectorCount);
+                printf("An Error Has Occurred\n");
                 return 1;
             }
+
+            if(!thereWasPoint){
+                currentScalar *= pow(10,-baseExp-1);
+            }
+
             currentVector[scalarCount]=currentScalar*sign;
+
             currentScalar = 0;
+            thereWasPoint = 0;
             sign = 1;
             baseExp = BASE_EXP_START;
             scalarCount++;
@@ -225,19 +243,24 @@ int main(int argc, char **argv)
         else if(ch=='.'){
             currentScalar *= pow(10,-baseExp-1);
             baseExp = -1;
+            thereWasPoint = 1;
         }else{
             currentScalar += (ch-'0')*pow(10,baseExp);
             baseExp--;
         }
     }
 
+
+
+
+    printf("dim: %d\n",dim);
     printf("vector count: %d\n",vectorCount);
     printf("convergence count: %d\n",convergenceCount);
-    for(i=0;i<k;i++){
+    for(i=0;i<k;i++){ // Printing the updated clusters (their centroids)
         for(j=0;j<dim-1;j++){
-            printf("%lf,",clusters[i][j]);
+            printf("%.4f,",clusters[i][j]);
         }
-        printf("%lf\n",clusters[i][j]);
+        printf("%.4f\n",clusters[i][j]);
     }
     return 0;
 }
