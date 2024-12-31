@@ -166,7 +166,7 @@ if __name__=="__main__":
 
         data = get_data(file_path)
 
-        valid, error = validate_input(K,data.count('\n')-1, iter)
+        valid, error = validate_input(K,data.count('\n'), iter)
         if (not valid):
             print(error)
             os._exit(1)()
