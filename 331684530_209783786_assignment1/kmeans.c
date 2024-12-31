@@ -72,7 +72,7 @@ int main(int argc, char **argv)
     }
     rewind(stdin); /* Reset the file pointer*/
 
-    if(vector_count <= k){
+    if(vector_count <= k || dim == 0){
         printf("Invalid number of clusters!\n");
         return 1;
     }
@@ -158,7 +158,7 @@ int main(int argc, char **argv)
         prevClusters[i] = malloc(dim * sizeof(double));
     }
 
-   
+
     for(iter = 0; iter < maxIter && !converged; iter++) {
         converged = 1;
 
