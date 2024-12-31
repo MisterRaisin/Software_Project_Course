@@ -166,17 +166,19 @@ if __name__=="__main__":
 
         data = get_data(file_path)
 
-        valid, error = validate_input(K, len(data.split('\n')), iter)
+        valid, error = validate_input(K, len(data.split('\n'))-1, iter)
         if (not valid):
             print(error)
             os._exit(1)()
+
 
         output = format_output(k_means(K, iter, data))
 
         for line in output:
             print(line)
 
-    except: 
+    except Exception as e:
+        # print(e) 
         error_has_occured()
 
 
