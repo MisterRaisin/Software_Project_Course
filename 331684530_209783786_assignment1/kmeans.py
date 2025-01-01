@@ -4,7 +4,7 @@ import math
 
 
 EPSILON = 0.001
-DEFAULT_ITERATIONS = 200
+DEFAULT_ITERATIONS = "200"
 
 
 def error_has_occured():
@@ -12,7 +12,7 @@ def error_has_occured():
     Default action to handle random error
     """
     print("An Error Has Occurred")
-    os._exit(1)()
+    sys.exit()
 
 
 def get_euclidean_dist(vec1, vec2):
@@ -108,7 +108,7 @@ def k_means(K, iters, data):
         new_centroid_list = get_centroids(cluster_lst, vector_len)
 
 
-        # If finished converging or reached maximum iterations, os._exit(1)
+        # If finished converging or reached maximum iterations, exit
         if check_convergence(centroid_lst, new_centroid_list) or curr_iter == iters:
             centroid_lst = new_centroid_list
             break
@@ -125,10 +125,13 @@ def validate_input(K, N, iter = None):
     """
     Validates input of K and iterations (if given) according to the table in the exercise.
     """
-    if (not 1 < K < N):
+
+    if (not K.isdigit() or not 1 < int(K) < N):
         return False, "Invalid number of clusters!"
-    if (iter and not 1 < iter < 1000):
+    
+    if (iter and (not iter.isdigit() or not 1 < int(iter) < 1000)):
         return False, "Invalid maximum iteration!"
+    
     return True, None
 
 
@@ -160,18 +163,21 @@ if __name__=="__main__":
     
     try:
         if (len(args) == 3):
-            K, iter, file_path = int(args[1]), DEFAULT_ITERATIONS, args[2]
+            K, iter, file_path = args[1], DEFAULT_ITERATIONS, args[2]
+        elif (len(args) == 4):
+            K, iter, file_path = args[1], args[2], args[3]
         else:
-            K, iter, file_path = int(args[1]), int(args[2]), args[3]
+            raise ValueError()
 
         data = get_data(file_path)
+        valid, error = validate_input(K,data.count('\n'), iter)
 
-        valid, error = validate_input(K, len(data.split('\n'))-1, iter)
         if (not valid):
             print(error)
-            os._exit(1)()
+            sys.exit()
 
 
+        K, iter = int(K), int(iter)
         output = format_output(k_means(K, iter, data))
 
         for line in output:
@@ -179,6 +185,7 @@ if __name__=="__main__":
 
     except Exception as e:
         # print(e) 
+        # print(type(e))
         error_has_occured()
 
 

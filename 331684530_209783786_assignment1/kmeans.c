@@ -72,7 +72,7 @@ int main(int argc, char **argv)
     }
     rewind(stdin); /* Reset the file pointer*/
 
-    if(vector_count < k){
+    if(vector_count <= k){
         printf("Invalid number of clusters!\n");
         return 1;
     }
