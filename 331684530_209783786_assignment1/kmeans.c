@@ -15,22 +15,21 @@ double getDistance(double a[],double b[],int dim);
 int main(int argc, char **argv)
 {
     int i=0,j=0,k, maxIter; /* iterators and input*/
+    int dim=-1;
+    int vector_count=0;
     char ch;
     int scalarCount=0;
     int baseExp=BASE_EXP_START; /* We add char by char, and this keeps track of the floating point*/
     int sign = 1;
     int thereWasPoint=0;
     double currentScalar=0;
-    int dim=-1;
-    int vector_count=0;
+    int converged ;
+    int iter;
     double **vectors;
-    double **prevClusters;
     double **clusters;
     double **sums;
     int *clusterSizes;
-    int converged;
-    int iter;
-
+    double **prevClusters;
     if(argc < 2 || argc > 3){ /* Wrong number of arguments (1 or 2 depending on the iter max) + 1 of the file*/
         printf("An Error Has Occurred\n");
         return 1;
@@ -51,7 +50,10 @@ int main(int argc, char **argv)
     }
 
   
+    
     i=0;
+        
+
     while ((ch = getc(stdin)) != EOF) { /* Finding the dimension and vector count*/
         if(ch==','){ /* End of scalar*/
             i++;
@@ -72,11 +74,13 @@ int main(int argc, char **argv)
     }
     rewind(stdin); /* Reset the file pointer*/
 
-    if(vector_count <= k){
+    if(vector_count <= k || dim == 0){
         printf("Invalid number of clusters!\n");
         return 1;
     }
-
+ 
+    
+   
     vectors = malloc(vector_count * sizeof(double *));
     for(i = 0; i < vector_count; i++) {
         vectors[i] = malloc(dim * sizeof(double));
@@ -84,6 +88,8 @@ int main(int argc, char **argv)
 
     i=0;
     
+    
+
     while ( i<vector_count  && (ch = getc(stdin)) != EOF) { /* processing all vectors*/
         if(ch==','){ /* comma, end of scalar*/
 
@@ -129,53 +135,44 @@ int main(int argc, char **argv)
     }
 
 
-
     clusters = malloc(k * sizeof(double *));
-    for(i = 0; i < k; i++) {
+    for (i = 0; i < k; i++) {
         clusters[i] = malloc(dim * sizeof(double));
-    }
-
-    for(i = 0; i < k; i++) { /* Copy fist 8 vals*/
-        for(j = 0; j < dim; j++) {
+        for (j = 0; j < dim; j++) {
             clusters[i][j] = vectors[i][j];
         }
     }
 
-    
-
-    
-
-
     sums = malloc(k * sizeof(double *));
-    for(i = 0; i < k; i++) {
+    for (i = 0; i < k; i++) {
         sums[i] = malloc(dim * sizeof(double));
     }
 
     clusterSizes = calloc(k, sizeof(int));
     prevClusters = malloc(k * sizeof(double *));
-    
-    for(i = 0; i < k; i++) {
+    for (i = 0; i < k; i++) {
         prevClusters[i] = malloc(dim * sizeof(double));
     }
 
-   
-    for(iter = 0; iter < maxIter && !converged; iter++) {
+    
+    converged = 0;
+    for (iter = 0; iter < maxIter && !converged; iter++) {
         converged = 1;
 
         /* Reset sums and sizes*/
-        for(i = 0; i < k; i++) {
-            for(j = 0; j < dim; j++) {
+        for (i = 0; i < k; i++) {
+            for (j = 0; j < dim; j++) {
                 sums[i][j] = 0;
             }
             clusterSizes[i] = 0;
         }
 
-        /* Assign vectors to clusters*/
-        for(i = 0; i < vector_count; i++) {
+        /*Assign vectors to clusters*/
+        for (i = 0; i < vector_count; i++) {
             int minCluster = 0;
             double minDist = getDistance(vectors[i], clusters[0], dim);
 
-            for(j = 1; j < k; j++) {
+            for (j = 1; j < k; j++) {
                 double dist = getDistance(vectors[i], clusters[j], dim);
                 if (dist < minDist) {
                     minDist = dist;
@@ -184,14 +181,14 @@ int main(int argc, char **argv)
             }
 
             clusterSizes[minCluster]++;
-            for(j = 0; j < dim; j++) {
+            for (j = 0; j < dim; j++) {
                 sums[minCluster][j] += vectors[i][j];
             }
         }
 
         /* Update clusters*/
-        for(i = 0; i < k; i++) {
-            for(j = 0; j < dim; j++) {
+        for (i = 0; i < k; i++) {
+            for (j = 0; j < dim; j++) {
                 prevClusters[i][j] = clusters[i][j];
                 clusters[i][j] = clusterSizes[i] ? sums[i][j] / clusterSizes[i] : clusters[i][j];
             }
@@ -203,8 +200,8 @@ int main(int argc, char **argv)
     }
 
     /* Print final clusters*/
-    for(i = 0; i < k; i++) {
-        for(j = 0; j < dim; j++) {
+    for (i = 0; i < k; i++) {
+        for (j = 0; j < dim; j++) {
             printf("%.4f", clusters[i][j]);
             if (j < dim - 1) printf(",");
         }
@@ -212,10 +209,10 @@ int main(int argc, char **argv)
     }
 
     /* Free memory*/
-    for(i = 0; i < vector_count; i++) free(vectors[i]);
+    for (i = 0; i < vector_count; i++) free(vectors[i]);
     free(vectors);
 
-    for(i = 0; i < k; i++) {
+    for (i = 0; i < k; i++) {
         free(clusters[i]);
         free(sums[i]);
         free(prevClusters[i]);
@@ -228,15 +225,12 @@ int main(int argc, char **argv)
     return 0;
 }
 
-
-
-double getDistance(double a[],double b[],int dim){
+double getDistance(double a[], double b[], int dim) {
     double sum = 0;
-    double temp;
-    int i;
-    for(i=0;i<dim;i++){
-        temp =  a[i]-b[i];
-        sum += temp*temp;
+    int i=0;
+    for (i = 0; i < dim; i++) {
+        double diff = a[i] - b[i];
+        sum += diff * diff;
     }
     return sqrt(sum);
 }
