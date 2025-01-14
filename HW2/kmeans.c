@@ -17,7 +17,7 @@ double getDistance(double a[], double b[], int dim) {
     return sqrt(sum);
 }
 
-void  print_data(double **data, int rows, int cols) {
+void print_data(double **data, int rows, int cols) {
     int i, j;
     for (i = 0; i < rows; i++)
     {
