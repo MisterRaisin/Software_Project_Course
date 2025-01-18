@@ -2,11 +2,11 @@ import sys
 import os
 import math
 import numpy as np
-
+import mykmeanssp
 
 
 EPSILON = 0.001
-DEFAULT_ITERATIONS = "200"
+DEFAULT_ITERATIONS = 200
 
 def processInput():
     if not 5 <= len(sys.argv) <= 6:
@@ -69,9 +69,6 @@ def processFiles(file1, file2):
             sys.exit(1)
         vectors1[i].extend(vectors2[i][1:])
 
-    for sub_array in vectors1:
-        print(",".join(map(str, sub_array[1:])))
-    sys.exit(1)
     return np.array(vectors1)
     
 
@@ -79,27 +76,31 @@ def processFiles(file1, file2):
 def main():
     np.random.seed(1234)
 
-    K, iter, eps, vectors,N = processInput()
+    K, iter, eps, vectors, N = processInput()
     weights = np.ones(N)
     centroids = np.zeros((K, vectors.shape[1]))
-    currentCentroidCount = 0
-    for i in range(K):
+    choice = np.random.choice(N)
+    centroids[0] = vectors[choice]
+    weights[choice] = 0
+    currentCentroidCount = 1
+
+    while currentCentroidCount < K:
+        for i in range(N):
+            if weights[i] == 0:
+                continue
+            minDist = math.inf
+            for centroid in range(currentCentroidCount):
+                dist = np.linalg.norm(vectors[i][1:] - centroids[centroid][1:])
+                if dist < minDist:
+                    minDist = dist
+            weights[i] = minDist**2
+        
         choice = np.random.choice(N, p=weights/weights.sum())
         centroids[currentCentroidCount] = vectors[choice]
         weights[choice] = 0
         currentCentroidCount += 1
         
-        for i, vector in enumerate(vectors):
-            if weights[i] == 0:
-                continue
-            minDist = math.inf
-            for centroid in range(currentCentroidCount):
-                dist = np.linalg.norm(vector[1:] - centroids[centroid][1:])
-                if dist < minDist:
-                    minDist = dist
-                weights[i] = minDist**2
-        
-    print(','.join([str(centroid[0]) for centroid in centroids]))
+    print(','.join(["{:.0f}".format(centroid[0]) for centroid in centroids]))
 
 if __name__=="__main__":
     main()
