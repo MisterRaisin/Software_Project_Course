@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "kmeans.c"
 #ifndef KMEANS_H
 #define KMEANS_H
 

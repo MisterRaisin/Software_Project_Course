@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include "kmeans.h"
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
-#include "kmeans.h"
 
 // Function to convert a Python list of lists to a C 2D double array
 double** python_list_of_lists_to_double_array(PyObject* py_list, size_t* outer_size, size_t** inner_sizes) {

@@ -67,7 +67,7 @@ def processFiles(file1, file2):
         if vectors1[i][0] != vectors2[i][0]:
             print("An Error Has Occurred")
             sys.exit(1)
-        vectors1[i].extend(vectors2[i][1:])
+        vectors1[i] = vectors1[i][1:] + vectors2[i][1:]
 
     return np.array(vectors1)
     
@@ -77,10 +77,13 @@ def main():
     np.random.seed(1234)
 
     K, iter, eps, vectors, N = processInput()
+
+
     weights = np.ones(N)
-    centroids = np.zeros((K, vectors.shape[1]))
+    centroidIndexes = np.zeros(K, dtype=int)
+    
     choice = np.random.choice(N)
-    centroids[0] = vectors[choice]
+    centroidIndexes[0] = choice
     weights[choice] = 0
     currentCentroidCount = 1
 
@@ -90,17 +93,22 @@ def main():
                 continue
             minDist = math.inf
             for centroid in range(currentCentroidCount):
-                dist = np.linalg.norm(vectors[i][1:] - centroids[centroid][1:])
+                dist = np.linalg.norm(vectors[i] - vectors[centroidIndexes[centroid]])
                 if dist < minDist:
                     minDist = dist
-            weights[i] = minDist**2
+            weights[i] = minDist
         
         choice = np.random.choice(N, p=weights/weights.sum())
-        centroids[currentCentroidCount] = vectors[choice]
+        centroidIndexes[currentCentroidCount] = choice
         weights[choice] = 0
         currentCentroidCount += 1
-        
-    print(','.join(["{:.0f}".format(centroid[0]) for centroid in centroids]))
+    
+    print(','.join([str(index) for index in centroidIndexes]))
+    # result = mykmeanssp.fit( vectors.tolist() , [vectors[index].tolist() for index in centroidIndexes] ,K, iter, eps)
+    # for cluster in result:
+    #     print(','.join(["{:.4f}".format(centroid) for centroid in cluster]))
+
+
 
 if __name__=="__main__":
     main()
