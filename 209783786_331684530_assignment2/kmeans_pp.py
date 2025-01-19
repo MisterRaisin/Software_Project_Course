@@ -6,7 +6,7 @@ import mykmeanssp
 
 
 EPSILON = 0.001
-DEFAULT_ITERATIONS = 200
+DEFAULT_ITERATIONS = "200"
 
 def processInput():
     if not 5 <= len(sys.argv) <= 6:
@@ -16,20 +16,27 @@ def processInput():
 
     
     if len(sys.argv) == 5:
-        K, iter,eps,path1,path2 =  int(sys.argv[1]),DEFAULT_ITERATIONS,float(sys.argv[2]),sys.argv[3],sys.argv[4]
-        noIter = 0
+        K, iter,eps,path1,path2 =  sys.argv[1],DEFAULT_ITERATIONS,sys.argv[2],sys.argv[3],sys.argv[4]
     else:
-        K, iter,eps,path1,path2 =  int(sys.argv[1]),int(sys.argv[2]),float(sys.argv[3]),sys.argv[4],sys.argv[5]
-       
-    if not 1 < iter < 1000:
+        K, iter,eps,path1,path2 =  sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5]
+    
+    if not iter.isdigit() or not 1 < int(iter) < 1000:
         print("Invalid maximum iteration!")
         sys.exit(1)
-    if(not 1<K):
+    
+    iter = int(iter)
+    if not K.isdigit() or (not 1<int(K)):
         print("Invalid number of clusters!")
         sys.exit(1)
-    if eps < 0:
+    K = int(K)
+    try:
+        if float(eps) < 0:
+            print("Invalid epsilon!")
+            sys.exit(1)
+    except:
         print("Invalid epsilon!")
         sys.exit(1)
+    eps = float(eps)
     
     if not ( os.path.isfile(path1) and (path1.endswith('.txt') or path1.endswith('.csv')) ) or not ( os.path.isfile(path2) and (path2.endswith('.txt') or path2.endswith('.csv')) ):
         print("An Error Has Occurred")
