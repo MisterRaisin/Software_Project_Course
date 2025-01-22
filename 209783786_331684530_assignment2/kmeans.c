@@ -41,6 +41,9 @@ PyObject* kmeans_c(double **vectors, double **clusters, int k, int maxIter, doub
     double **sums, **prevClusters;
     int i, j, iter, converged = 0;
 
+//print epsilon
+
+    printf("c kmeans %lf",eps);
 
     /* Create previous clusters 2d array - k x dim */
     prevClusters = malloc(k * sizeof(double *));

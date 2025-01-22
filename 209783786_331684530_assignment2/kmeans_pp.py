@@ -111,6 +111,7 @@ def main():
         currentCentroidCount += 1
     
     print(','.join([str(index) for index in centroidIndexes]))
+    print("python {:.4f}".format(eps))
     result = mykmeanssp.fit( vectors.tolist() , [vectors[index].tolist() for index in centroidIndexes] ,K, iter, eps)
     for cluster in result:
         print(','.join(["{:.4f}".format(centroid) for centroid in cluster]))
