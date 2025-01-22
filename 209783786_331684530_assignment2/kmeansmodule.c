@@ -85,7 +85,6 @@ static PyObject* fit(PyObject* self, PyObject* args) {
     if (!PyArg_ParseTuple(args, "OOiid", &list1, &list2, &k, &maxIter, &eps)) {
         return NULL;
     }
-    printf("c module epsilon: %f\n", eps);
 
     // Convert the first list of lists to a C array
     size_t outer_size1;
