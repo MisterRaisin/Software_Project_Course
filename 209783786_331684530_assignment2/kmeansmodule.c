@@ -82,7 +82,7 @@ static PyObject* fit(PyObject* self, PyObject* args) {
     double eps;
 
     // Parse arguments: two lists of lists followed by three integers
-    if (!PyArg_ParseTuple(args, "OOiif", &list1, &list2, &k, &maxIter, &eps)) {
+    if (!PyArg_ParseTuple(args, "OOiid", &list1, &list2, &k, &maxIter, &eps)) {
         return NULL;
     }
     printf("c module epsilon: %f\n", eps);
