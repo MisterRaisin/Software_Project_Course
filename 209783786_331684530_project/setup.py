@@ -4,7 +4,7 @@ symnmf_module = Extension(
     'symnmf',
     sources=['symnmfmodule.c', 'symnmf.c'],
     include_dirs=['.'],
-    extra_compile_args=['-ansi', '-Wall', '-Wextra', '-Werror', '-pedantic-errors']
+    extra_compile_args=[ '-Wall', '-Wextra', '-Werror', '-pedantic-errors']
 )
 
 setup(
