@@ -26,31 +26,6 @@ def perform_symnmf_clustering(X, k):
     return labels
 
 
-# def perform_kmeans_clustering(X, k):
-#     """Performs clustering using KMeans and returns the labels. Params: X - data, k - number of clusters. Ret: cluster labels."""
-#     max_iters = 300
-#     e = 1e-4
-#     np.random.seed(1234)
-#     n = X.shape[0]
-    
-#     # Randomly initialize cluster centers
-#     centroids = X[np.random.choice(n, k, replace=False)]
-    
-#     for _ in range(max_iters):
-#         # Compute distances and assign clusters
-#         distances = np.linalg.norm(X[:, np.newaxis, :] - centroids, axis=2)
-#         labels = np.argmin(distances, axis=1)
-        
-#         # Compute new centroids
-#         new_centroids = np.array([X[labels == i].mean(axis=0) for i in range(k)])
-        
-#         # Check for convergence
-#         if np.linalg.norm(new_centroids - centroids) < e:
-#             break
-#         centroids = new_centroids
-    
-#     return labels
-
 def main():
     try:
         k = int(sys.argv[1]) # No input validation is required
