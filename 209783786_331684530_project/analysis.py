@@ -39,16 +39,21 @@ def main():
 
         # Perform SymNMF clustering
         symnmf_labels = perform_symnmf_clustering(X, k)
-        symnmf_score = silhouette_score(X, symnmf_labels)
-
-        X_not_np = get_data(file_name)
+        
         # Perform KMeans clustering
+        X_not_np = get_data(file_name)
         kmeans_labels = k_means(X_not_np, k)
-        kmeans_score = silhouette_score(X, kmeans_labels)
 
-        print(f"nmf: {symnmf_score:.4f}")
-        print(f"kmeans: {kmeans_score:.4f}")
-
+        if len(set(symnmf_labels)) > 1:
+            print(f"nmf: {silhouette_score(X, symnmf_labels):.4f}")
+        else:
+            print(f"nmf: Score is undefined if only one cluster is found")
+        
+        if len(set(kmeans_labels)) > 1:
+            print(f"kmeans: {silhouette_score(X, kmeans_labels):.4f}")
+        else:
+            print(f"kmeans: Score is undefined if only one cluster is found")
+            
     except ValueError:
         print("An Error Has Occurred")
         sys.exit(1) 
