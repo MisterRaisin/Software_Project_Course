@@ -32,6 +32,7 @@ double** allocate_matrix(int rows, int cols) {
 
 /* Helper function to free a 2D array. Params: matrix - the matrix to free, rows - the num of rows. Ret: None.*/
 void free_matrix(double** matrix, int rows) {
+    if(!matrix) return; /* Check if matrix is NULL*/
     int i;
     for (i = 0; i < rows; i++)
         free(matrix[i]);
@@ -95,15 +96,9 @@ double** compute_normalized_similarity(double** similarity, int n) {
     int i, j;
     double** normalized = allocate_matrix(n, n);
     
-    if (!degrees) {
-        if (!normalized)
-            return NULL;
-        free_matrix(normalized, n);
-        return NULL;
-    }
-
-    if (!normalized) {
-        free(degrees);
+    if (!degrees || !normalized) {
+        if(normalized) free_matrix(normalized, n);
+        if(degrees) free(degrees);
         return NULL;
     }
 
@@ -144,12 +139,10 @@ double** perform_symnmf(double** W, double** H, int n, int k) {
     double diff, numerator, denominator; /* helper temp variables*/
     int i, j, l, iter; /* iterators */
     double **temp, **HxHt = allocate_matrix(n, n), **H_new = allocate_matrix(n, k);
-
-    if (!H_new || !HxHt) return NULL;
-    if (n == 0) {
-        free_matrix(H_new, n);
-        free_matrix(HxHt, n);
-        return H;
+    if (!H_new || !HxHt || n==0) {
+        if (HxHt) free_matrix(HxHt, n);
+        if (H_new) free_matrix(H_new, n);
+        return n==0 ? H : NULL;
     }
     for (iter = 0; iter < max_iter; iter++) {
         diff = 0;
@@ -236,8 +229,11 @@ int get_matrix_dimensions(const char *filename, int *rows, int *cols) {
         if (first_row_cols == -1) { 
             first_row_cols = current_cols;
             *cols = first_row_cols;
-        } else if (current_cols != first_row_cols) /* Ensure all rows have the same column count*/
+        } else if (current_cols != first_row_cols){ /* Ensure all rows have the same column count*/
+            free(line);
+            fclose(file);
             return 1;
+        }
         (*rows)++; /* Increment row count*/
     }
 
@@ -269,7 +265,7 @@ double **read_matrix(const char *filename, int rows, int cols) {
             /* Check if token is a valid number */
             if (*endptr != '\0' && *endptr != '\n') {
                 free(line);
-                free_matrix(matrix, row + 1);  /* free what was read so far */
+                free_matrix(matrix, rows);
                 fclose(file);
                 return NULL;
             }
@@ -279,7 +275,7 @@ double **read_matrix(const char *filename, int rows, int cols) {
         }
         if (col != cols) {
             free(line);
-            free_matrix(matrix, row + 1);
+            free_matrix(matrix, rows);
             fclose(file);
             return NULL;
         }
