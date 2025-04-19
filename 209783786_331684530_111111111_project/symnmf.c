@@ -32,8 +32,8 @@ double** allocate_matrix(int rows, int cols) {
 
 /* Helper function to free a 2D array. Params: matrix - the matrix to free, rows - the num of rows. Ret: None.*/
 void free_matrix(double** matrix, int rows) {
-    if(!matrix) return; /* Check if matrix is NULL*/
     int i;
+    if(!matrix) return; /* Check if matrix is NULL*/
     for (i = 0; i < rows; i++)
         free(matrix[i]);
     
@@ -155,6 +155,7 @@ double** perform_symnmf(double** W, double** H, int n, int k) {
                     numerator += W[i][l] * H[l][j]; /* W*H */
                     denominator += HxHt[i][l] * H[l][j]; /* (H*H^t)*H */
                 }
+                denominator = denominator == 0 ? 1e-6 : denominator;
                 H_new[i][j] = H[i][j] * (1 - betta + betta*numerator/denominator); /* formula */
                 diff += (H_new[i][j] - H[i][j]) * (H_new[i][j] - H[i][j]); /* squared Frobenius partial sum*/
             }
